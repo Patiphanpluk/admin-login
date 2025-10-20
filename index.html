@@ -1,136 +1,260 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="th">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ระบบลงทะเบียนแอดมิน</title>
-<style>
-  /* Layout */
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(to bottom, #e0f7fa, #ffffff);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-  }
-
-  .container {
-    background: #ffffff;
-    padding: 40px;
-    border-radius: 15px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-    width: 100%;
-    max-width: 400px;
-    text-align: center;
-  }
-
-  h1 {
-    margin-bottom: 30px;
-    color: #00796b;
-  }
-
-  input {
-    width: 100%;
-    padding: 12px 15px;
-    margin: 10px 0;
-    border: 1px solid #b2dfdb;
-    border-radius: 8px;
-    outline: none;
-    font-size: 16px;
-    transition: all 0.2s;
-  }
-
-  input:focus {
-    border-color: #00796b;
-    box-shadow: 0 0 5px rgba(0,121,107,0.5);
-  }
-
-  button {
-    width: 100%;
-    padding: 12px;
-    margin-top: 15px;
-    border: none;
-    border-radius: 8px;
-    background: #00796b;
-    color: #ffffff;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background 0.3s, transform 0.1s;
-  }
-
-  button:hover {
-    background: #004d40;
-    transform: translateY(-2px);
-  }
-
-  #status {
-    margin-top: 15px;
-    min-height: 24px;
-    font-weight: bold;
-  }
-
-  #status.loading { color: #00796b; }
-  #status.success { color: #388e3c; }
-  #status.error { color: #d32f2f; }
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ระบบล็อกอิน (Admin only)</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #fff;
+      --accent: #1f6feb;
+      --accent-dark: #0048b5;
+    }
+    *{box-sizing:border-box}
+    body {
+      font-family: Inter, system-ui, Segoe UI, Roboto, Helvetica, Arial;
+      display: flex;
+      min-height: 100vh;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(180deg,var(--bg),#eef3ff);
+    }
+    .card {
+      width: 100%;
+      max-width: 560px;
+      padding: 32px;
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: 0 12px 36px rgba(20,30,60,.12);
+      text-align: center;
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: 22px;
+      color: var(--accent);
+    }
+    p.lead {
+      margin: 0 0 18px;
+      color: #586173;
+    }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+    .tabs button {
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #e6e9f2;
+      background: #fff;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tabs button.active {
+      background: linear-gradient(90deg,var(--accent),#4da3ff);
+      color: #fff;
+      border: none;
+    }
+    form {
+      display: grid;
+      gap: 12px;
+      text-align: left;
+    }
+    label {
+      font-size: 13px;
+      color: #314152;
+    }
+    input[type=text], input[type=password] {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #dbe4f5;
+      border-radius: 10px;
+      font-size: 15px;
+      transition: all 0.2s;
+    }
+    input[type=text]:focus, input[type=password]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 5px rgba(31,111,235,0.3);
+      outline: none;
+    }
+    .row {
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-size: 15px;
+      transition: all 0.2s;
+    }
+    .btn.primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn.primary:hover {
+      background: var(--accent-dark);
+    }
+    .btn.ghost {
+      background: transparent;
+      border: 1px solid #dbe4f5;
+      color: #314152;
+    }
+    .btn.ghost:hover {
+      background: #f0f4ff;
+    }
+    .note { font-size: 13px; color: #6b7280; }
+    .msg {
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      margin-top: 12px;
+    }
+    .msg.error { background:#fff1f0;color:#b42318;border:1px solid #ffd7d4; }
+    .msg.ok { background:#f0fff6;color:#066b3d;border:1px solid #bff0d6; }
+    footer { margin-top: 14px;font-size: 13px;color: #7b8394; }
+    .small { font-size: 12px; color: #8a93a6; }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <h1>ระบบลงทะเบียนแอดมิน</h1>
-    <input id="sid" placeholder="รหัสนักศึกษา">
-    <input id="pass" type="password" placeholder="รหัสผ่าน">
-    <button id="btnRegister">ลงทะเบียน</button>
-    <p id="status"></p>
+  <div class="card">
+    <h1>ระบบล็อกอินสำหรับแอดมิน</h1>
+    <p class="lead">ลงทะเบียนครั้งแรกด้วย รหัสนักศึกษา และรหัสผ่าน — เฉพาะรหัสนักศึกษาที่เป็นแอดมินจะสามารถเข้าสู่ระบบได้</p>
+
+    <div class="tabs">
+      <button id="tab-register" class="active">ลงทะเบียน</button>
+      <button id="tab-login">ล็อกอิน</button>
+    </div>
+
+    <div id="content">
+      <!-- Register -->
+      <form id="form-register">
+        <label>รหัสนักศึกษา (Student ID)</label>
+        <input id="reg-student" type="text" inputmode="numeric" placeholder="เช่น 65030138" required />
+
+        <label>รหัสผ่าน</label>
+        <input id="reg-pass" type="password" placeholder="ตั้งรหัสผ่าน" required />
+
+        <div class="row">
+          <button type="submit" class="btn primary">ลงทะเบียน</button>
+          <button type="button" id="reg-reset" class="btn ghost">ล้าง</button>
+        </div>
+        <p class="note">หมายเหตุ: ผู้ที่ลงทะเบียนและมีรหัสนักศึกษา <strong>65030138</strong> จะถูกตั้งเป็นแอดมินโดยอัตโนมัติ</p>
+      </form>
+
+      <!-- Login -->
+      <form id="form-login" style="display:none;">
+        <label>รหัสนักศึกษา</label>
+        <input id="log-student" type="text" placeholder="รหัสนักศึกษา" required />
+
+        <label>รหัสผ่าน</label>
+        <input id="log-pass" type="password" placeholder="รหัสผ่าน" required />
+
+        <div class="row">
+          <button type="submit" class="btn primary">เข้าสู่ระบบ</button>
+          <button type="button" id="log-reset" class="btn ghost">ล้าง</button>
+        </div>
+        <p class="small">เมื่อเข้าสู่ระบบสำเร็จ (และหากเป็นแอดมิน) จะเด้งไปยัง Google Sheets ที่กำหนด</p>
+      </form>
+
+      <div id="message"></div>
+    </div>
+
+    <footer>
+      <div class="small">การจัดเก็บข้อมูล: ตัวอย่างนี้เก็บบัญชีผู้ใช้ใน <strong>localStorage</strong> ของเบราว์เซอร์ (เหมาะสำหรับทดสอบหรือใช้งานภายในเท่านั้น)</div>
+    </footer>
   </div>
 
-  <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxzgLc2mWuUAhJq-FKOSwWpoeKr1Cuj7EU1iBBScO7Bc-fg5qQp9QzNpeXFgPHPL1i0Rw/exec';
+<script>
+const ADMIN_STUDENT_ID = '65030138';
+const REDIRECT_URL = 'https://docs.google.com/spreadsheets/u/1/d/e/2PACX-1vRKy8QJiooOdDlbq9qHbWDm8WBd3pOG_HH0H5aJ_-bIgQxM1MwxL6gptDCUNYdxOGzl7hVqXIa-Vk4q/pubhtml';
+const STORAGE_KEY = 'my_app_users_v2';
 
-    async function sha256Base64(str){
-      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-      return btoa(String.fromCharCode(...new Uint8Array(buf)));
-    }
+function showMessage(text,type='error'){
+  const el=document.getElementById('message');
+  el.innerHTML=`<div class='msg ${type==='ok'?'ok':'error'}'>${text}</div>`;
+}
+function clearMessage(){ document.getElementById('message').innerHTML=''; }
 
-    async function registerUser(){
-      const sid = document.getElementById('sid').value.trim();
-      const pass = document.getElementById('pass').value;
-      const statusEl = document.getElementById('status');
+async function sha256Base64(str){
+  const enc=new TextEncoder();
+  const data=enc.encode(str);
+  const hash=await crypto.subtle.digest('SHA-256',data);
+  return btoa(String.fromCharCode(...new Uint8Array(hash)));
+}
 
-      if(!sid || !pass){
-        statusEl.innerText = 'กรอกให้ครบทั้งรหัสนักศึกษาและรหัสผ่าน';
-        statusEl.className = 'error';
-        return;
-      }
+function loadUsers(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'); }catch(e){ return [] } }
+function saveUsers(users){ localStorage.setItem(STORAGE_KEY,JSON.stringify(users)); }
 
-      statusEl.innerText = 'กำลังลงทะเบียน...';
-      statusEl.className = 'loading';
+// Tabs
+document.getElementById('tab-register').addEventListener('click',()=>{
+  document.getElementById('form-register').style.display='';
+  document.getElementById('form-login').style.display='none';
+  document.getElementById('tab-register').classList.add('active');
+  document.getElementById('tab-login').classList.remove('active');
+  clearMessage();
+});
+document.getElementById('tab-login').addEventListener('click',()=>{
+  document.getElementById('form-register').style.display='none';
+  document.getElementById('form-login').style.display='';
+  document.getElementById('tab-register').classList.remove('active');
+  document.getElementById('tab-login').classList.add('active');
+  clearMessage();
+});
 
-      try{
-        const hash = await sha256Base64(sid + '|' + pass);
-        const response = await fetch(API_URL, {
-          method: 'POST',
-          headers: {'Content-Type':'application/json'},
-          body: JSON.stringify({sid, passHash: hash})
-        });
-        const result = await response.json();
+// Register
+document.getElementById('form-register').addEventListener('submit', async e=>{
+  e.preventDefault();
+  clearMessage();
+  const sid=document.getElementById('reg-student').value.trim();
+  const pass=document.getElementById('reg-pass').value;
+  if(!sid||!pass){ showMessage('กรุณากรอกข้อมูลให้ครบ'); return; }
+  const users=loadUsers();
+  if(users.find(u=>u.studentId===sid)){ showMessage('รหัสนักศึกษานี้ลงทะเบียนไปแล้ว'); return; }
+  const hashed=await sha256Base64(sid+'|'+pass);
+  const isAdmin=(sid===ADMIN_STUDENT_ID);
+  users.push({studentId:sid,passHash:hashed,isAdmin:isAdmin,createdAt:new Date().toISOString()});
+  saveUsers(users);
+  showMessage(`ลงทะเบียนสำเร็จ${isAdmin?' (ตั้งเป็นแอดมิน)':''}`,'ok');
+  setTimeout(()=>document.getElementById('tab-login').click(),900);
+});
+document.getElementById('reg-reset').addEventListener('click',()=>{
+  document.getElementById('reg-student').value='';
+  document.getElementById('reg-pass').value='';
+});
 
-        if(result.success){
-          statusEl.innerText = 'ลงทะเบียนสำเร็จ' + (result.isAdmin ? ' (แอดมิน)' : '');
-          statusEl.className = 'success';
-        } else {
-          statusEl.innerText = 'ข้อผิดพลาด: ' + result.message;
-          statusEl.className = 'error';
-        }
-      } catch(err){
-        console.error(err);
-        statusEl.innerText = 'เกิดข้อผิดพลาดขณะติดต่อเซิร์ฟเวอร์';
-        statusEl.className = 'error';
-      }
-    }
+// Login
+document.getElementById('form-login').addEventListener('submit', async e=>{
+  e.preventDefault();
+  clearMessage();
+  const sid=document.getElementById('log-student').value.trim();
+  const pass=document.getElementById('log-pass').value;
+  if(!sid||!pass){ showMessage('กรุณากรอกข้อมูลให้ครบ'); return; }
+  const users=loadUsers();
+  const user=users.find(u=>u.studentId===sid);
+  if(!user){ showMessage('ไม่พบบัญชีผู้ใช้ กรุณาลงทะเบียนก่อน'); return; }
+  const hashed=await sha256Base64(sid+'|'+pass);
+  if(hashed!==user.passHash){ showMessage('รหัสผ่านไม่ถูกต้อง'); return; }
+  if(!user.isAdmin){ showMessage('บัญชีนี้ไม่ได้รับสิทธิ์แอดมิน'); return; }
+  showMessage('เข้าสู่ระบบสำเร็จ กำลังพาไปยังเอกสาร...','ok');
+  sessionStorage.setItem('loggedUser',JSON.stringify({studentId:user.studentId,loggedAt:new Date().toISOString()}));
+  setTimeout(()=>window.location.href=REDIRECT_URL,800);
+});
+document.getElementById('log-reset').addEventListener('click',()=>{
+  document.getElementById('log-student').value='';
+  document.getElementById('log-pass').value='';
+});
 
-    document.getElementById('btnRegister').addEventListener('click', registerUser);
-  </script>
+// Prefill last registered ID (optional)
+(function(){
+  const last=loadUsers().slice(-1)[0];
+  if(last) document.getElementById('reg-student').value=last.studentId;
+})();
+</script>
 </body>
 </html>
