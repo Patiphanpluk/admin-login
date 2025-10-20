@@ -3,56 +3,134 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ระบบล็อกอินแอดมิน</title>
+<title>ระบบลงทะเบียนแอดมิน</title>
 <style>
-body {font-family:sans-serif; max-width:400px;margin:30px auto;}
-input, button {display:block;width:100%;margin:10px 0;padding:10px;}
-#status {color:blue;}
+  /* Layout */
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(to bottom, #e0f7fa, #ffffff);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
+
+  .container {
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+  }
+
+  h1 {
+    margin-bottom: 30px;
+    color: #00796b;
+  }
+
+  input {
+    width: 100%;
+    padding: 12px 15px;
+    margin: 10px 0;
+    border: 1px solid #b2dfdb;
+    border-radius: 8px;
+    outline: none;
+    font-size: 16px;
+    transition: all 0.2s;
+  }
+
+  input:focus {
+    border-color: #00796b;
+    box-shadow: 0 0 5px rgba(0,121,107,0.5);
+  }
+
+  button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 15px;
+    border: none;
+    border-radius: 8px;
+    background: #00796b;
+    color: #ffffff;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.1s;
+  }
+
+  button:hover {
+    background: #004d40;
+    transform: translateY(-2px);
+  }
+
+  #status {
+    margin-top: 15px;
+    min-height: 24px;
+    font-weight: bold;
+  }
+
+  #status.loading { color: #00796b; }
+  #status.success { color: #388e3c; }
+  #status.error { color: #d32f2f; }
 </style>
 </head>
 <body>
-<h1>ระบบลงทะเบียนแอดมิน</h1>
-<input id="sid" placeholder="รหัสนักศึกษา">
-<input id="pass" type="password" placeholder="รหัสผ่าน">
-<button id="btnRegister">ลงทะเบียน</button>
-<p id="status"></p>
+  <div class="container">
+    <h1>ระบบลงทะเบียนแอดมิน</h1>
+    <input id="sid" placeholder="รหัสนักศึกษา">
+    <input id="pass" type="password" placeholder="รหัสผ่าน">
+    <button id="btnRegister">ลงทะเบียน</button>
+    <p id="status"></p>
+  </div>
 
-<script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbxzgLc2mWuUAhJq-FKOSwWpoeKr1Cuj7EU1iBBScO7Bc-fg5qQp9QzNpeXFgPHPL1i0Rw/exec';
+  <script>
+    const API_URL = 'https://script.google.com/macros/s/AKfycbxzgLc2mWuUAhJq-FKOSwWpoeKr1Cuj7EU1iBBScO7Bc-fg5qQp9QzNpeXFgPHPL1i0Rw/exec';
 
-// ฟังก์ชันเข้ารหัส SHA-256
-async function sha256Base64(str){
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-  return btoa(String.fromCharCode(...new Uint8Array(buf)));
-}
-
-document.getElementById('btnRegister').addEventListener('click', async ()=>{
-  const sid = document.getElementById('sid').value.trim();
-  const pass = document.getElementById('pass').value;
-  if(!sid||!pass){document.getElementById('status').innerText='กรอกให้ครบ'; return;}
-
-  document.getElementById('status').innerText='กำลังลงทะเบียน...';
-
-  const hash = await sha256Base64(sid + '|' + pass);
-
-  fetch(API_URL, {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({sid, passHash: hash})
-  })
-  .then(r=>r.json())
-  .then(res=>{
-    if(res.success){
-      document.getElementById('status').innerText='ลงทะเบียนสำเร็จ' + (res.isAdmin?' (แอดมิน)':'');
-    } else {
-      document.getElementById('status').innerText=res.message;
+    async function sha256Base64(str){
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+      return btoa(String.fromCharCode(...new Uint8Array(buf)));
     }
-  })
-  .catch(e=>{
-    document.getElementById('status').innerText='เกิดข้อผิดพลาด';
-    console.error(e);
-  });
-});
-</script>
+
+    async function registerUser(){
+      const sid = document.getElementById('sid').value.trim();
+      const pass = document.getElementById('pass').value;
+      const statusEl = document.getElementById('status');
+
+      if(!sid || !pass){
+        statusEl.innerText = 'กรอกให้ครบทั้งรหัสนักศึกษาและรหัสผ่าน';
+        statusEl.className = 'error';
+        return;
+      }
+
+      statusEl.innerText = 'กำลังลงทะเบียน...';
+      statusEl.className = 'loading';
+
+      try{
+        const hash = await sha256Base64(sid + '|' + pass);
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({sid, passHash: hash})
+        });
+        const result = await response.json();
+
+        if(result.success){
+          statusEl.innerText = 'ลงทะเบียนสำเร็จ' + (result.isAdmin ? ' (แอดมิน)' : '');
+          statusEl.className = 'success';
+        } else {
+          statusEl.innerText = 'ข้อผิดพลาด: ' + result.message;
+          statusEl.className = 'error';
+        }
+      } catch(err){
+        console.error(err);
+        statusEl.innerText = 'เกิดข้อผิดพลาดขณะติดต่อเซิร์ฟเวอร์';
+        statusEl.className = 'error';
+      }
+    }
+
+    document.getElementById('btnRegister').addEventListener('click', registerUser);
+  </script>
 </body>
 </html>
