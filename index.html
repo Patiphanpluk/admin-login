@@ -1,110 +1,76 @@
 <!doctype html>
 <html lang="th">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ระบบล็อกอินแอดมิน</title>
-  <style>
-    :root{--bg:#f5f7fb;--card:#fff;--accent:#1f6feb}
-    *{box-sizing:border-box}
-    body{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial;display:flex;min-height:100vh;align-items:center;justify-content:center;background:linear-gradient(180deg,var(--bg),#eef3ff)}
-    .card{width:100%;max-width:560px;padding:28px;background:var(--card);border-radius:12px;box-shadow:0 8px 30px rgba(20,30,60,.08)}
-    h1{margin:0 0 12px;font-size:20px}
-    p.lead{margin:0 0 18px;color:#586173}
-    .tabs{display:flex;gap:8px;margin-bottom:18px}
-    .tabs button{flex:1;padding:10px;border-radius:8px;border:1px solid #e6e9f2;background:#fff;cursor:pointer}
-    .tabs button.active{background:linear-gradient(90deg,var(--accent),#4da3ff);color:#fff;border:none}
-    form{display:grid;gap:10px}
-    label{font-size:13px;color:#314152}
-    input[type=text],input[type=password]{width:100%;padding:10px;border:1px solid #dbe4f5;border-radius:8px}
-    .row{display:flex;gap:10px}
-    .btn{padding:10px 14px;border-radius:8px;border:none;cursor:pointer}
-    .btn.primary{background:var(--accent);color:#fff}
-    .btn.ghost{background:transparent;border:1px solid #dbe4f5}
-    .note{font-size:13px;color:#6b7280}
-    .msg{padding:10px;border-radius:8px;font-size:14px}
-    .msg.error{background:#fff1f0;color:#b42318;border:1px solid #ffd7d4}
-    .msg.ok{background:#f0fff6;color:#066b3d;border:1px solid #bff0d6}
-    footer{margin-top:14px;font-size:13px;color:#7b8394}
-    .small{font-size:12px;color:#8a93a6}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ระบบล็อกอินแอดมิน</title>
+<style>
+/* --- CSS --- */
+body{font-family:Arial,Helvetica,sans-serif;background:#f4f4f8;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;}
+.card{background:#fff;padding:28px;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.08);width:100%;max-width:500px;}
+h1{margin:0 0 12px;font-size:20px}
+.tabs{display:flex;gap:8px;margin-bottom:18px}
+.tabs button{flex:1;padding:10px;border-radius:8px;border:1px solid #ddd;background:#fff;cursor:pointer}
+.tabs button.active{background:#1f6feb;color:#fff;border:none}
+form{display:grid;gap:10px}
+label{font-size:13px;color:#314152}
+input[type=text],input[type=password]{width:100%;padding:10px;border:1px solid #ddd;border-radius:8px}
+.row{display:flex;gap:10px}
+.btn{padding:10px 14px;border-radius:8px;border:none;cursor:pointer}
+.btn.primary{background:#1f6feb;color:#fff}
+.btn.ghost{background:transparent;border:1px solid #ddd}
+.msg{padding:10px;border-radius:8px;font-size:14px}
+.msg.error{background:#fff1f0;color:#b42318;border:1px solid #ffd7d4}
+.msg.ok{background:#f0fff6;color:#066b3d;border:1px solid #bff0d6}
+</style>
 </head>
 <body>
-  <div class="card">
-    <h1>ระบบล็อกอินสำหรับแอดมิน</h1>
-    <p class="lead">ลงทะเบียนครั้งแรกด้วย รหัสนักศึกษา และรหัสผ่าน — เฉพาะรหัสนักศึกษาที่อยู่ในรายการแอดมินจาก Google Sheets จะสามารถเข้าสู่ระบบได้</p>
+<div class="card">
+<h1>ระบบล็อกอินสำหรับแอดมิน</h1>
+<div class="tabs">
+  <button id="tab-register" class="active">ลงทะเบียน</button>
+  <button id="tab-login">ล็อกอิน</button>
+</div>
 
-    <div class="tabs">
-      <button id="tab-register" class="active">ลงทะเบียน</button>
-      <button id="tab-login">ล็อกอิน</button>
-    </div>
+<div id="content">
+<!-- Register -->
+<form id="form-register">
+<label>รหัสนักศึกษา</label>
+<input id="reg-student" type="text" placeholder="เช่น 65030138" required>
+<label>รหัสผ่าน</label>
+<input id="reg-pass" type="password" placeholder="ตั้งรหัสผ่าน" required>
+<div class="row">
+<button type="submit" class="btn primary">ลงทะเบียน</button>
+<button type="button" id="reg-reset" class="btn ghost">ล้าง</button>
+</div>
+<p>หมายเหตุ: ผู้ที่รหัสอยู่ในรายชื่อแอดมิน (ชีต2) จะถูกตั้งเป็นแอดมิน</p>
+</form>
 
-    <div id="content">
-      <!-- Register -->
-      <form id="form-register">
-        <label>รหัสนักศึกษา (Student ID)</label>
-        <input id="reg-student" type="text" inputmode="numeric" placeholder="เช่น 65030138" required />
+<!-- Login -->
+<form id="form-login" style="display:none;">
+<label>รหัสนักศึกษา</label>
+<input id="log-student" type="text" placeholder="รหัสนักศึกษา" required>
+<label>รหัสผ่าน</label>
+<input id="log-pass" type="password" placeholder="รหัสผ่าน" required>
+<div class="row">
+<button type="submit" class="btn primary">เข้าสู่ระบบ</button>
+<button type="button" id="log-reset" class="btn ghost">ล้าง</button>
+</div>
+<p>เมื่อเข้าสู่ระบบสำเร็จ จะเด้งไปหน้า Google Sheets</p>
+</form>
 
-        <label>รหัสผ่าน</label>
-        <input id="reg-pass" type="password" placeholder="ตั้งรหัสผ่าน" required />
-
-        <div class="row">
-          <button type="submit" class="btn primary">ลงทะเบียน</button>
-          <button type="button" id="reg-reset" class="btn ghost">ล้าง</button>
-        </div>
-        <p class="note">หมายเหตุ: ผู้ที่ลงทะเบียนด้วยรหัสนักศึกษาที่อยู่ในรายชื่อแอดมินจาก Google Sheets จะถูกตั้งเป็นแอดมินโดยอัตโนมัติ</p>
-      </form>
-
-      <!-- Login -->
-      <form id="form-login" style="display:none;">
-        <label>รหัสนักศึกษา</label>
-        <input id="log-student" type="text" placeholder="รหัสนักศึกษา" required />
-
-        <label>รหัสผ่าน</label>
-        <input id="log-pass" type="password" placeholder="รหัสผ่าน" required />
-
-        <div class="row">
-          <button type="submit" class="btn primary">เข้าสู่ระบบ</button>
-          <button type="button" id="log-reset" class="btn ghost">ล้าง</button>
-        </div>
-        <p class="small">เมื่อเข้าสู่ระบบสำเร็จ (และหากเป็นแอดมิน) จะเด้งไปยัง Google Sheets ที่กำหนด</p>
-      </form>
-
-      <div id="message" style="margin-top:12px"></div>
-    </div>
-
-    <footer>
-      <div class="small">การจัดเก็บข้อมูล: ตัวอย่างนี้เก็บบัญชีผู้ใช้ใน <strong>localStorage</strong> ของเบราว์เซอร์ (เหมาะสำหรับทดสอบหรือใช้งานภายในเท่านั้น)</div>
-    </footer>
-  </div>
+<div id="message" style="margin-top:12px"></div>
+</div>
+</div>
 
 <script>
 // --- Settings ---
-const ADMIN_API_URL = 'https://script.google.com/macros/s/AKfycbxWet5E4SU32487Ct4GaBF5k2dY7ZJL96wwDRPD-IEnCuCfAl_Wbp6wHGOxSvk3JWXilw/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxyFLRfL0Ge8z4ulqmU1qo6MPmpecdHCTfAeTCCwlfRyGZgwU5jpmp1Cm4lI8sLsDbRnw/exec'; // วาง URL Web App ของคุณ
 const REDIRECT_URL = 'https://docs.google.com/spreadsheets/u/1/d/e/2PACX-1vRKy8QJiooOdDlbq9qHbWDm8WBd3pOG_HH0H5aJ_-bIgQxM1MwxL6gptDCUNYdxOGzl7hVqXIa-Vk4q/pubhtml';
-const STORAGE_KEY = 'my_app_users_v2';
-
-let ADMIN_IDS = [];
-
-// โหลดรายชื่อแอดมินล่าสุดจาก Google Sheet
-async function loadAdminList(){
-  try{
-    const res = await fetch(ADMIN_API_URL + '?_t=' + Date.now());
-    const data = await res.json();
-    ADMIN_IDS = Array.isArray(data) ? data.map(String) : [];
-    console.log('🔁 อัปเดตรายชื่อแอดมิน:', ADMIN_IDS);
-  }catch(err){
-    console.error('❌ โหลดรายชื่อแอดมินไม่สำเร็จ:', err);
-  }
-}
 
 // --- Helpers ---
-function showMessage(text,type='error'){
-  const el=document.getElementById('message');
-  el.innerHTML=`<div class='msg ${type==='ok'?'ok':'error'}'>${text}</div>`;
-}
+function showMessage(text,type='error'){document.getElementById('message').innerHTML=`<div class='msg ${type==='ok'?'ok':'error'}'>${text}</div>`;}
 function clearMessage(){document.getElementById('message').innerHTML='';}
-
 async function sha256Base64(str){
   const enc=new TextEncoder();
   const data=enc.encode(str);
@@ -115,12 +81,7 @@ async function sha256Base64(str){
   return btoa(binary);
 }
 
-function loadUsers(){
-  try{const raw=localStorage.getItem(STORAGE_KEY);return raw?JSON.parse(raw):{};}catch(e){return{};}
-}
-function saveUsers(users){localStorage.setItem(STORAGE_KEY,JSON.stringify(users));}
-
-// --- UI Tabs ---
+// --- Tabs ---
 document.getElementById('tab-register').addEventListener('click',()=>{
   document.getElementById('form-register').style.display='';
   document.getElementById('form-login').style.display='none';
@@ -138,47 +99,48 @@ document.getElementById('tab-login').addEventListener('click',()=>{
 
 // --- Register ---
 document.getElementById('form-register').addEventListener('submit',async (e)=>{
-  e.preventDefault();
-  clearMessage();
+  e.preventDefault(); clearMessage();
   const sid=document.getElementById('reg-student').value.trim();
   const pass=document.getElementById('reg-pass').value;
-  if(!sid || !pass){showMessage('กรุณากรอกข้อมูลให้ครบ');return;}
-
-  await loadAdminList(); // โหลดรายชื่อล่าสุดก่อนเช็ก
-
-  const users=loadUsers();
-  if(users[sid]){
-    showMessage('รหัสนักศึกษานี้ลงทะเบียนไปแล้ว');return;
-  }
+  if(!sid||!pass){showMessage('กรุณากรอกข้อมูลให้ครบ');return;}
   const hashed=await sha256Base64(sid+'|'+pass);
-  const isAdmin=ADMIN_IDS.includes(sid);
-  users[sid]={passHash:hashed,isAdmin,isAdmin,createdAt:new Date().toISOString()};
-  saveUsers(users);
-  showMessage(`ลงทะเบียนสำเร็จ${isAdmin?' (แอดมิน)':''}`,'ok');
-  setTimeout(()=>{document.getElementById('tab-login').click();},900);
+
+  try{
+    const res=await fetch(APPS_SCRIPT_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({sid:sid,passHash:hashed})
+    });
+    const data=await res.json();
+    if(data.success){
+      showMessage(`ลงทะเบียนสำเร็จ${data.isAdmin?' (แอดมิน)':''}`,'ok');
+      setTimeout(()=>{document.getElementById('tab-login').click();},800);
+    } else showMessage(data.message);
+  }catch(err){showMessage('เกิดข้อผิดพลาด: '+err);}
 });
 
 // --- Login ---
 document.getElementById('form-login').addEventListener('submit',async (e)=>{
-  e.preventDefault();
-  clearMessage();
+  e.preventDefault(); clearMessage();
   const sid=document.getElementById('log-student').value.trim();
   const pass=document.getElementById('log-pass').value;
-  if(!sid || !pass){showMessage('กรุณากรอกข้อมูลให้ครบ');return;}
-
-  await loadAdminList(); // โหลดรายชื่อล่าสุดก่อนเช็ก
-
-  const users=loadUsers();
-  const user=users[sid];
-  if(!user){showMessage('ไม่พบบัญชีผู้ใช้ กรุณาลงทะเบียนก่อน');return;}
+  if(!sid||!pass){showMessage('กรุณากรอกข้อมูลให้ครบ');return;}
   const hashed=await sha256Base64(sid+'|'+pass);
-  if(hashed!==user.passHash){showMessage('รหัสผ่านไม่ถูกต้อง');return;}
-  if(!ADMIN_IDS.includes(sid)){showMessage('บัญชีนี้ไม่มีสิทธิ์เข้าถึง');return;}
-  showMessage('เข้าสู่ระบบสำเร็จ กำลังไปหน้าแอดมิน...','ok');
-  setTimeout(()=>{window.location.href=REDIRECT_URL;},800);
+
+  // ดึงข้อมูลผู้ใช้ทั้งหมดจาก ชีต3
+  try{
+    const res=await fetch(APPS_SCRIPT_URL+'?getUsers=1'); // ต้องเพิ่มฟังก์ชันใน Apps Script ถ้าต้องการดึง users
+    const usersData=await res.json();
+    const user=usersData[sid];
+    if(!user){showMessage('ไม่พบบัญชี');return;}
+    if(user.passHash!==hashed){showMessage('รหัสผ่านไม่ถูกต้อง');return;}
+    if(!user.isAdmin){showMessage('บัญชีไม่มีสิทธิ์เข้าถึง');return;}
+    showMessage('เข้าสู่ระบบสำเร็จ กำลังไปหน้าแอดมิน...','ok');
+    setTimeout(()=>{window.location.href=REDIRECT_URL;},800);
+  }catch(err){showMessage('เกิดข้อผิดพลาด: '+err);}
 });
 
-// --- Reset Buttons ---
+// --- Reset ---
 document.getElementById('reg-reset').addEventListener('click',()=>{document.getElementById('reg-student').value='';document.getElementById('reg-pass').value='';clearMessage();});
 document.getElementById('log-reset').addEventListener('click',()=>{document.getElementById('log-student').value='';document.getElementById('log-pass').value='';clearMessage();});
 </script>
