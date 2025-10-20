@@ -32,7 +32,7 @@
 <body>
   <div class="card">
     <h1>ระบบล็อกอินสำหรับแอดมิน</h1>
-    <p class="lead">ลงทะเบียนครั้งแรกด้วย รหัสนักศึกษา และรหัสผ่าน — เฉพาะรหัสนักศึกษาที่เป็นแอดมินจะสามารถเข้าสู่ระบบได้</p>
+    <p class="lead">ลงทะเบียนครั้งแรกด้วย รหัสนักศึกษา และรหัสผ่าน — เฉพาะรหัสนักศึกษาที่อยู่ในรายการแอดมินจะสามารถเข้าสู่ระบบได้</p>
 
     <div class="tabs">
       <button id="tab-register" class="active">ลงทะเบียน</button>
@@ -52,7 +52,7 @@
           <button type="submit" class="btn primary">ลงทะเบียน</button>
           <button type="button" id="reg-reset" class="btn ghost">ล้าง</button>
         </div>
-        <p class="note">หมายเหตุ: ผู้ที่ลงทะเบียนและมีรหัสนักศึกษา <strong>65030138</strong> จะถูกตั้งเป็นแอดมินโดยอัตโนมัติ</p>
+        <p class="note">หมายเหตุ: ผู้ที่ลงทะเบียนด้วยรหัสนักศึกษาที่อยู่ในรายชื่อแอดมินจาก Google Sheets จะถูกตั้งเป็นแอดมินโดยอัตโนมัติ</p>
       </form>
 
       <!-- Login -->
@@ -80,10 +80,24 @@
   </div>
 
 <script>
-// --- Configuration ---
-const ADMIN_STUDENT_ID = '65030138';
-const REDIRECT_URL = 'https://docs.google.com/spreadsheets/u/1/d/e/2PACX-1vRKy8QJiooOdDlbq9qHbWDm8WBd3pOG_HH0H5aJ_-bIgQxM1MwxL6gptDCUNYdxOGzl7hVqXIa-Vk4q/pubhtml';
-const STORAGE_KEY = 'my_app_users_v1';
+// --- Settings ---
+const ADMIN_API_URL = 'https://script.google.com/macros/s/AKfycbxWet5E4SU32487Ct4GaBF5k2dY7ZJL96wwDRPD-IEnCuCfAl_Wbp6wHGOxSvk3JWXilw/exec';
+const REDIRECT_URL = 'https://docs.google.com/spreadsheets/u/1/d/e/2PACX-1vRKy8QJiooOdDlbq9qHbWDm8WBd3pOG_H0H5aJ_-bIgQxM1MwxL6gptDCUNYdxOGzl7hVqXIa-Vk4q/pubhtml';
+const STORAGE_KEY = 'my_app_users_v2';
+
+let ADMIN_IDS = [];
+
+// โหลดรายชื่อแอดมินจาก Google Sheet
+async function loadAdminList() {
+  try {
+    const res = await fetch(ADMIN_API_URL);
+    const data = await res.json();
+    ADMIN_IDS = Array.isArray(data) ? data.map(String) : [];
+    console.log('Admin list loaded:', ADMIN_IDS);
+  } catch (err) {
+    console.error('โหลดรายชื่อแอดมินไม่สำเร็จ:', err);
+  }
+}
 
 // --- Helpers ---
 function showMessage(text, type='error'){
@@ -94,11 +108,9 @@ function showMessage(text, type='error'){
 function clearMessage(){ document.getElementById('message').innerHTML = '' }
 
 async function sha256Base64(str){
-  // encode as UTF-8
   const enc = new TextEncoder();
   const data = enc.encode(str);
   const hash = await crypto.subtle.digest('SHA-256', data);
-  // convert to base64
   const bytes = new Uint8Array(hash);
   let binary = '';
   for (let i=0;i<bytes.byteLength;i++) binary += String.fromCharCode(bytes[i]);
@@ -144,11 +156,10 @@ document.getElementById('form-register').addEventListener('submit', async (e)=>{
     return;
   }
   const hashed = await sha256Base64(sid + '|' + pass);
-  const isAdmin = (sid === ADMIN_STUDENT_ID);
+  const isAdmin = ADMIN_IDS.includes(sid);
   users.push({studentId: sid, passHash: hashed, isAdmin: !!isAdmin, createdAt: new Date().toISOString()});
   saveUsers(users);
   showMessage(`ลงทะเบียนสำเร็จ${isAdmin? ' (ตั้งเป็นแอดมิน)':''}`, 'ok');
-  // auto-switch to login
   setTimeout(()=>{ document.getElementById('tab-login').click(); }, 900);
 });
 
@@ -165,9 +176,7 @@ document.getElementById('form-login').addEventListener('submit', async (e)=>{
   const hashed = await sha256Base64(sid + '|' + pass);
   if(hashed !== user.passHash){ showMessage('รหัสผ่านไม่ถูกต้อง'); return }
   if(!user.isAdmin){ showMessage('บัญชีนี้ไม่ได้รับสิทธิ์แอดมิน'); return }
-  // success
   showMessage('เข้าสู่ระบบสำเร็จ กำลังพาไปยังเอกสาร...', 'ok');
-  // store a short session token (not secure, demonstration only)
   sessionStorage.setItem('loggedUser', JSON.stringify({studentId: user.studentId, loggedAt:new Date().toISOString()}));
   setTimeout(()=>{ window.location.href = REDIRECT_URL; }, 800);
 });
@@ -182,7 +191,9 @@ document.getElementById('log-reset').addEventListener('click', ()=>{
   document.getElementById('log-pass').value='';
 });
 
-// Friendly: prefill student id for convenience (optional)
+// เริ่มโหลดรายชื่อแอดมินจากชีต
+loadAdminList();
+
 (function(){
   const last = loadUsers().slice(-1)[0];
   if(last) document.getElementById('reg-student').value = last.studentId;
