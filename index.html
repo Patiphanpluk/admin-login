@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="utf-8">
@@ -43,42 +43,47 @@ footer{margin-top:14px;font-size:13px;color:#7b8394}
   <!-- Register -->
   <form id="form-register">
     <label>รหัสนักศึกษา (Student ID)</label>
-    <input id="reg-student" type="text" placeholder="เช่น 65030138" required>
+    <input id="reg-student" type="text" inputmode="numeric" placeholder="เช่น 65030138" required>
+
     <label>รหัสผ่าน</label>
     <input id="reg-pass" type="password" placeholder="ตั้งรหัสผ่าน" required>
+
     <div class="row">
       <button type="submit" class="btn primary">ลงทะเบียน</button>
       <button type="button" id="reg-reset" class="btn ghost">ล้าง</button>
     </div>
-    <p class="note">หมายเหตุ: ผู้ที่เป็นแอดมินในชีต2 จะถูกตั้งแอดมินอัตโนมัติ</p>
+    <p class="note">หมายเหตุ: หากรหัสนักศึกษามีสิทธิ์แอดมิน จะถูกตั้งค่าเป็นแอดมินโดยอัตโนมัติ</p>
   </form>
 
   <!-- Login -->
   <form id="form-login" style="display:none;">
     <label>รหัสนักศึกษา</label>
     <input id="log-student" type="text" placeholder="รหัสนักศึกษา" required>
+
     <label>รหัสผ่าน</label>
     <input id="log-pass" type="password" placeholder="รหัสผ่าน" required>
+
     <div class="row">
       <button type="submit" class="btn primary">เข้าสู่ระบบ</button>
       <button type="button" id="log-reset" class="btn ghost">ล้าง</button>
     </div>
-    <p class="small">เมื่อเข้าสู่ระบบสำเร็จ จะเด้งไปยัง Google Sheets ที่กำหนด</p>
+    <p class="small">เมื่อเข้าสู่ระบบสำเร็จ (และเป็นแอดมิน) จะเด้งไปยังลิงก์ที่กำหนดในชีต2</p>
   </form>
 
   <div id="message" style="margin-top:12px"></div>
 </div>
 
 <footer>
-<div class="small">ข้อมูลผู้ใช้จะถูกเก็บใน Google Sheets (ชีต3)</div>
+<div class="small">ข้อมูลผู้ใช้จะถูกเก็บใน Google Sheets (ชีต3) ของคุณ</div>
 </footer>
-</div>
 
 <script>
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxsiUB4oSIJU36ONHxHIHpl1zANFbN-xydOmEM5Xzx19ymPght2BcKFTucVxloQ4_rUrg/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzhehc8brAJukn3rSqVR8q1Jov-bNvvIoluuLwheLOwNGiLQb8OVdQruaLNjzKI2mbSZA/exec'; // แก้เป็น URL Web App ของคุณ
 
-function showMessage(text,type='error'){document.getElementById('message').innerHTML=`<div class='msg ${type==='ok'?'ok':'error'}'>${text}</div>`;}
-function clearMessage(){document.getElementById('message').innerHTML='';}
+function showMessage(text,type='error'){
+  document.getElementById('message').innerHTML = `<div class='msg ${type==='ok'?'ok':'error'}'>${text}</div>`;
+}
+function clearMessage(){ document.getElementById('message').innerHTML=''; }
 
 // Tabs
 document.getElementById('tab-register').addEventListener('click',()=>{
@@ -103,10 +108,17 @@ document.getElementById('form-register').addEventListener('submit',async e=>{
   const pass=document.getElementById('reg-pass').value;
   if(!sid||!pass){ showMessage('กรุณากรอกข้อมูลให้ครบ'); return; }
   try{
-    const res=await fetch(WEB_APP_URL,{method:'POST',body:JSON.stringify({action:'register',studentId:sid,pass:pass})});
+    const res=await fetch(WEB_APP_URL,{
+      method:'POST',
+      body:JSON.stringify({action:'register',studentId:sid,pass:pass})
+    });
     const data=await res.json();
-    if(data.success){ showMessage(data.message+(data.isAdmin?' (แอดมิน)':''),'ok'); setTimeout(()=>document.getElementById('tab-login').click(),900);}
-    else{ showMessage(data.message); }
+    if(data.success){
+      showMessage(data.message+(data.isAdmin?' (แอดมิน)':''),'ok');
+      setTimeout(()=>document.getElementById('tab-login').click(),900);
+    } else {
+      showMessage(data.message);
+    }
   } catch(err){ showMessage('เกิดข้อผิดพลาด: '+err); }
 });
 document.getElementById('reg-reset').addEventListener('click',()=>{ document.getElementById('reg-student').value=''; document.getElementById('reg-pass').value=''; });
@@ -118,11 +130,14 @@ document.getElementById('form-login').addEventListener('submit',async e=>{
   const pass=document.getElementById('log-pass').value;
   if(!sid||!pass){ showMessage('กรุณากรอกข้อมูลให้ครบ'); return; }
   try{
-    const res=await fetch(WEB_APP_URL,{method:'POST',body:JSON.stringify({action:'login',studentId:sid,pass:pass})});
+    const res=await fetch(WEB_APP_URL,{
+      method:'POST',
+      body:JSON.stringify({action:'login',studentId:sid,pass:pass})
+    });
     const data=await res.json();
     if(data.success && data.isAdmin){
       showMessage('เข้าสู่ระบบสำเร็จ กำลังพาไปยังเอกสาร...','ok');
-      setTimeout(()=>window.location.href='https://docs.google.com/spreadsheets/u/1/d/e/2PACX-1vRKy8QJiooOdDlbq9qHbWDm8WBd3pOG_HH0H5aJ_-bIgQxM1MwxL6gptDCUNYdxOGzl7hVqXIa-Vk4q/pubhtml',800);
+      setTimeout(()=>{ if(data.link) window.location.href=data.link; },800);
     } else {
       showMessage(data.message);
     }
