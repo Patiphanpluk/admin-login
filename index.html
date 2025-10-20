@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ระบบล็อกอินแอดมิน</title>
 <style>
-/* --- CSS --- */
 body{font-family:Arial,Helvetica,sans-serif;background:#f4f4f8;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;}
 .card{background:#fff;padding:28px;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.08);width:100%;max-width:500px;}
 h1{margin:0 0 12px;font-size:20px}
@@ -65,7 +64,7 @@ input[type=text],input[type=password]{width:100%;padding:10px;border:1px solid #
 
 <script>
 // --- Settings ---
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxyFLRfL0Ge8z4ulqmU1qo6MPmpecdHCTfAeTCCwlfRyGZgwU5jpmp1Cm4lI8sLsDbRnw/exec'; // วาง URL Web App ของคุณ
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwrSwml6ki8U5iGM7tPwWZbqUznewQCdUITf-CuqMqsaMOHEJsL4_fY7Aa8lknrbzel7g/exec';
 const REDIRECT_URL = 'https://docs.google.com/spreadsheets/u/1/d/e/2PACX-1vRKy8QJiooOdDlbq9qHbWDm8WBd3pOG_HH0H5aJ_-bIgQxM1MwxL6gptDCUNYdxOGzl7hVqXIa-Vk4q/pubhtml';
 
 // --- Helpers ---
@@ -119,6 +118,10 @@ document.getElementById('form-register').addEventListener('submit',async (e)=>{
   }catch(err){showMessage('เกิดข้อผิดพลาด: '+err);}
 });
 
+// --- Reset ---
+document.getElementById('reg-reset').addEventListener('click',()=>{document.getElementById('reg-student').value='';document.getElementById('reg-pass').value='';clearMessage();});
+document.getElementById('log-reset').addEventListener('click',()=>{document.getElementById('log-student').value='';document.getElementById('log-pass').value='';clearMessage();});
+
 // --- Login ---
 document.getElementById('form-login').addEventListener('submit',async (e)=>{
   e.preventDefault(); clearMessage();
@@ -127,9 +130,9 @@ document.getElementById('form-login').addEventListener('submit',async (e)=>{
   if(!sid||!pass){showMessage('กรุณากรอกข้อมูลให้ครบ');return;}
   const hashed=await sha256Base64(sid+'|'+pass);
 
-  // ดึงข้อมูลผู้ใช้ทั้งหมดจาก ชีต3
   try{
-    const res=await fetch(APPS_SCRIPT_URL+'?getUsers=1'); // ต้องเพิ่มฟังก์ชันใน Apps Script ถ้าต้องการดึง users
+    // เช็กข้อมูลผู้ใช้จาก ชีต3 ผ่าน Web App
+    const res=await fetch(APPS_SCRIPT_URL+'?getUsers=1'); 
     const usersData=await res.json();
     const user=usersData[sid];
     if(!user){showMessage('ไม่พบบัญชี');return;}
@@ -139,10 +142,6 @@ document.getElementById('form-login').addEventListener('submit',async (e)=>{
     setTimeout(()=>{window.location.href=REDIRECT_URL;},800);
   }catch(err){showMessage('เกิดข้อผิดพลาด: '+err);}
 });
-
-// --- Reset ---
-document.getElementById('reg-reset').addEventListener('click',()=>{document.getElementById('reg-student').value='';document.getElementById('reg-pass').value='';clearMessage();});
-document.getElementById('log-reset').addEventListener('click',()=>{document.getElementById('log-student').value='';document.getElementById('log-pass').value='';clearMessage();});
 </script>
 </body>
 </html>
