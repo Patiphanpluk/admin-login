@@ -3,36 +3,36 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ระบบล็อกอิน Admin</title>
+<title>ระบบล็อกอิน (Admin only)</title>
 <style>
-  :root{--bg:#f5f7fb;--card:#fff;--accent:#1f6feb}
-  *{box-sizing:border-box}
-  body{font-family:Inter,system-ui,Segoe UI,Roboto,Arial;display:flex;min-height:100vh;align-items:center;justify-content:center;background:linear-gradient(180deg,var(--bg),#eef3ff)}
-  .card{width:100%;max-width:560px;padding:28px;background:var(--card);border-radius:12px;box-shadow:0 8px 30px rgba(20,30,60,.08)}
-  h1{margin:0 0 12px;font-size:20px}
-  p.lead{margin:0 0 18px;color:#586173}
-  .tabs{display:flex;gap:8px;margin-bottom:18px}
-  .tabs button{flex:1;padding:10px;border-radius:8px;border:1px solid #e6e9f2;background:#fff;cursor:pointer}
-  .tabs button.active{background:linear-gradient(90deg,var(--accent),#4da3ff);color:#fff;border:none}
-  form{display:grid;gap:10px}
-  label{font-size:13px;color:#314152}
-  input[type=text],input[type=password]{width:100%;padding:10px;border:1px solid #dbe4f5;border-radius:8px}
-  .row{display:flex;gap:10px}
-  .btn{padding:10px 14px;border-radius:8px;border:none;cursor:pointer}
-  .btn.primary{background:var(--accent);color:#fff}
-  .btn.ghost{background:transparent;border:1px solid #dbe4f5}
-  .note{font-size:13px;color:#6b7280}
-  .msg{padding:10px;border-radius:8px;font-size:14px}
-  .msg.error{background:#fff1f0;color:#b42318;border:1px solid #ffd7d4}
-  .msg.ok{background:#f0fff6;color:#066b3d;border:1px solid #bff0d6}
-  footer{margin-top:14px;font-size:13px;color:#7b8394}
-  .small{font-size:12px;color:#8a93a6}
+:root{--bg:#f5f7fb;--card:#fff;--accent:#1f6feb}
+*{box-sizing:border-box}
+body{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial;display:flex;min-height:100vh;align-items:center;justify-content:center;background:linear-gradient(180deg,var(--bg),#eef3ff)}
+.card{width:100%;max-width:560px;padding:28px;background:var(--card);border-radius:12px;box-shadow:0 8px 30px rgba(20,30,60,.08)}
+h1{margin:0 0 12px;font-size:20px}
+p.lead{margin:0 0 18px;color:#586173}
+.tabs{display:flex;gap:8px;margin-bottom:18px}
+.tabs button{flex:1;padding:10px;border-radius:8px;border:1px solid #e6e9f2;background:#fff;cursor:pointer}
+.tabs button.active{background:linear-gradient(90deg,var(--accent),#4da3ff);color:#fff;border:none}
+form{display:grid;gap:10px}
+label{font-size:13px;color:#314152}
+input[type=text],input[type=password]{width:100%;padding:10px;border:1px solid #dbe4f5;border-radius:8px}
+.row{display:flex;gap:10px}
+.btn{padding:10px 14px;border-radius:8px;border:none;cursor:pointer}
+.btn.primary{background:var(--accent);color:#fff}
+.btn.ghost{background:transparent;border:1px solid #dbe4f5}
+.note{font-size:13px;color:#6b7280}
+.msg{padding:10px;border-radius:8px;font-size:14px}
+.msg.error{background:#fff1f0;color:#b42318;border:1px solid #ffd7d4}
+.msg.ok{background:#f0fff6;color:#066b3d;border:1px solid #bff0d6}
+footer{margin-top:14px;font-size:13px;color:#7b8394}
+.small{font-size:12px;color:#8a93a6}
 </style>
 </head>
 <body>
 <div class="card">
   <h1>ระบบล็อกอินสำหรับแอดมิน</h1>
-  <p class="lead">ลงทะเบียนครั้งแรกด้วยรหัสนักศึกษาและรหัสผ่าน — เฉพาะรหัสนักศึกษาที่อยู่ในรายชื่อแอดมินจะสามารถเข้าสู่ระบบได้</p>
+  <p class="lead">ลงทะเบียนครั้งแรกด้วย รหัสนักศึกษา และรหัสผ่าน — เฉพาะรหัสนักศึกษาที่อยู่ในรายชื่อแอดมินจะสามารถเข้าสู่ระบบได้</p>
 
   <div class="tabs">
     <button id="tab-register" class="active">ลงทะเบียน</button>
@@ -42,7 +42,7 @@
   <div id="content">
     <!-- Register -->
     <form id="form-register">
-      <label>รหัสนักศึกษา</label>
+      <label>รหัสนักศึกษา (Student ID)</label>
       <input id="reg-student" type="text" placeholder="เช่น 65030138" required>
       <label>รหัสผ่าน</label>
       <input id="reg-pass" type="password" placeholder="ตั้งรหัสผ่าน" required>
@@ -50,57 +50,56 @@
         <button type="submit" class="btn primary">ลงทะเบียน</button>
         <button type="button" id="reg-reset" class="btn ghost">ล้าง</button>
       </div>
-      <p class="note">หมายเหตุ: เฉพาะผู้ที่อยู่ในรายชื่อแอดมินในชีต2 จะสามารถล็อกอินได้</p>
+      <p class="note">หมายเหตุ: ผู้ที่ลงทะเบียนและมีรายชื่อในชีต2 จะถูกตั้งเป็นแอดมินโดยอัตโนมัติ</p>
     </form>
 
     <!-- Login -->
     <form id="form-login" style="display:none;">
       <label>รหัสนักศึกษา</label>
-      <input id="log-student" type="text" required>
+      <input id="log-student" type="text" placeholder="รหัสนักศึกษา" required>
       <label>รหัสผ่าน</label>
-      <input id="log-pass" type="password" required>
+      <input id="log-pass" type="password" placeholder="รหัสผ่าน" required>
       <div class="row">
         <button type="submit" class="btn primary">เข้าสู่ระบบ</button>
         <button type="button" id="log-reset" class="btn ghost">ล้าง</button>
       </div>
-      <p class="small">เมื่อเข้าสู่ระบบสำเร็จ จะเด้งไปยัง Google Sheet</p>
+      <p class="small">เมื่อเข้าสู่ระบบสำเร็จ (และหากเป็นแอดมิน) จะเด้งไปยัง Google Sheets ที่กำหนด</p>
     </form>
 
     <div id="message" style="margin-top:12px"></div>
   </div>
 
   <footer>
-    <div class="small">การจัดเก็บข้อมูล: ใช้ Google Sheets (ชีต3)</div>
+    <div class="small">การจัดเก็บข้อมูล: ตัวอย่างนี้เก็บบัญชีผู้ใช้ใน <strong>localStorage</strong> ของเบราว์เซอร์ (เหมาะสำหรับทดสอบหรือใช้งานภายในเท่านั้น)</div>
   </footer>
 </div>
 
 <script>
-const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbypL0Qs0v9m-lJ25hzwRY6imx__L_GbRwNbDezu83cY3i3ajRoPFiH6VaKkXMGLcZqHsw/exec';
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwyYwJy-RBKW1kNK_SYSdTwXHqP7T3J-8b94XsezO3KpnrI8aAbhInrT9L0WNt9Sluksg/exec"; // เปลี่ยนเป็น Web App ของคุณ
 
-function showMessage(msg,type='error'){
+function showMessage(text, type='error'){
   const el = document.getElementById('message');
-  el.innerHTML = `<div class="msg ${type==='ok'?'ok':'error'}">${msg}</div>`;
+  el.innerHTML = `<div class='msg ${type==='ok'?'ok':'error'}'>${text}</div>`;
 }
-function clearMessage(){ document.getElementById('message').innerHTML=''; }
+
+function clearMessage(){ document.getElementById('message').innerHTML = '' }
 
 async function sha256Base64(str){
   const enc = new TextEncoder();
   const data = enc.encode(str);
-  const hash = await crypto.subtle.digest('SHA-256',data);
-  let bytes = new Uint8Array(hash), bin='';
-  for(let i=0;i<bytes.length;i++) bin += String.fromCharCode(bytes[i]);
-  return btoa(bin);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  return btoa(String.fromCharCode(...new Uint8Array(hash)));
 }
 
-// --- Tabs ---
-document.getElementById('tab-register').addEventListener('click',()=>{
+// Tabs
+document.getElementById('tab-register').addEventListener('click', ()=>{
   document.getElementById('form-register').style.display='';
   document.getElementById('form-login').style.display='none';
   document.getElementById('tab-register').classList.add('active');
   document.getElementById('tab-login').classList.remove('active');
   clearMessage();
 });
-document.getElementById('tab-login').addEventListener('click',()=>{
+document.getElementById('tab-login').addEventListener('click', ()=>{
   document.getElementById('form-register').style.display='none';
   document.getElementById('form-login').style.display='';
   document.getElementById('tab-register').classList.remove('active');
@@ -108,56 +107,65 @@ document.getElementById('tab-login').addEventListener('click',()=>{
   clearMessage();
 });
 
-// --- Register ---
+// Register
 document.getElementById('form-register').addEventListener('submit', async (e)=>{
-  e.preventDefault(); clearMessage();
+  e.preventDefault();
+  clearMessage();
   const sid = document.getElementById('reg-student').value.trim();
   const pass = document.getElementById('reg-pass').value;
-  if(!sid||!pass){ showMessage('กรุณากรอกข้อมูลให้ครบ'); return; }
-  const hashed = await sha256Base64(sid+'|'+pass);
-  try{
-    const res = await fetch(WEBAPP_URL,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({studentId:sid,passHash:hashed})
-    });
-    const data = await res.json();
-    if(data.success) showMessage('ลงทะเบียนสำเร็จ', 'ok');
-    else showMessage(data.message);
-  } catch(err){
-    showMessage('เกิดข้อผิดพลาด: '+err);
-  }
-});
-
-// --- Login ---
-document.getElementById('form-login').addEventListener('submit', async (e)=>{
-  e.preventDefault(); clearMessage();
-  const sid = document.getElementById('log-student').value.trim();
-  const pass = document.getElementById('log-pass').value;
-  if(!sid||!pass){ showMessage('กรุณากรอกข้อมูลให้ครบ'); return; }
-  const hashed = await sha256Base64(sid+'|'+pass);
-  try{
-    const res = await fetch(WEBAPP_URL,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({studentId:sid,passHash:hashed})
+  if(!sid || !pass){ showMessage('กรุณากรอกข้อมูลให้ครบ'); return }
+  const hashed = await sha256Base64(sid + '|' + pass);
+  try {
+    const res = await fetch(WEB_APP_URL, {
+      method: 'POST',
+      body: JSON.stringify({studentId: sid, passHash: hashed})
     });
     const data = await res.json();
     if(data.success){
-      showMessage('เข้าสู่ระบบสำเร็จ กำลังพาไปยัง Google Sheet...', 'ok');
-      setTimeout(()=>{ window.location.href='https://docs.google.com/spreadsheets/d/1i2yveA7zkgd-hjulFAGBvKqWvo0cCe91ChC4A_lJg0/edit#gid=1630320850'; },800);
-    } else showMessage(data.message);
+      showMessage('ลงทะเบียนสำเร็จ' + (data.isAdmin?' (แอดมิน)':''), 'ok');
+      setTimeout(()=>document.getElementById('tab-login').click(),900);
+    } else {
+      showMessage(data.message);
+    }
   } catch(err){
-    showMessage('เกิดข้อผิดพลาด: '+err);
+    showMessage('เกิดข้อผิดพลาด: ' + err);
   }
 });
 
-// Reset buttons
-document.getElementById('reg-reset').addEventListener('click',()=>{
+// Login
+document.getElementById('form-login').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  clearMessage();
+  const sid = document.getElementById('log-student').value.trim();
+  const pass = document.getElementById('log-pass').value;
+  if(!sid || !pass){ showMessage('กรุณากรอกข้อมูลให้ครบ'); return }
+  const hashed = await sha256Base64(sid + '|' + pass);
+  try {
+    const res = await fetch(WEB_APP_URL, {
+      method: 'POST',
+      body: JSON.stringify({studentId: sid, passHash: hashed})
+    });
+    const data = await res.json();
+    if(data.success && data.isAdmin){
+      showMessage('เข้าสู่ระบบสำเร็จ กำลังพาไปยังเอกสาร...', 'ok');
+      sessionStorage.setItem('loggedUser', JSON.stringify({studentId:sid, loggedAt:new Date()}));
+      setTimeout(()=>window.location.href="https://docs.google.com/spreadsheets/d/1i2yveA7zkgd-hjulFAGBvKqWvo0cCe91ChC4A_lJg0o/edit",800);
+    } else if(!data.isAdmin){
+      showMessage('บัญชีนี้ไม่ได้รับสิทธิ์แอดมิน');
+    } else {
+      showMessage(data.message);
+    }
+  } catch(err){
+    showMessage('เกิดข้อผิดพลาด: ' + err);
+  }
+});
+
+// Reset
+document.getElementById('reg-reset').addEventListener('click', ()=>{
   document.getElementById('reg-student').value='';
   document.getElementById('reg-pass').value='';
 });
-document.getElementById('log-reset').addEventListener('click',()=>{
+document.getElementById('log-reset').addEventListener('click', ()=>{
   document.getElementById('log-student').value='';
   document.getElementById('log-pass').value='';
 });
