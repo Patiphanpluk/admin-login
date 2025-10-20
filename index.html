@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ระบบล็อกอิน (Admin only)</title>
+  <title>ระบบล็อกอินแอดมิน</title>
   <style>
     :root{--bg:#f5f7fb;--card:#fff;--accent:#1f6feb}
     *{box-sizing:border-box}
@@ -32,7 +32,7 @@
 <body>
   <div class="card">
     <h1>ระบบล็อกอินสำหรับแอดมิน</h1>
-    <p class="lead">ลงทะเบียนครั้งแรกด้วย รหัสนักศึกษา และรหัสผ่าน — เฉพาะรหัสนักศึกษาที่อยู่ในรายการแอดมินจะสามารถเข้าสู่ระบบได้</p>
+    <p class="lead">ลงทะเบียนครั้งแรกด้วย รหัสนักศึกษา และรหัสผ่าน — เฉพาะรหัสนักศึกษาที่อยู่ในรายการแอดมินจาก Google Sheets จะสามารถเข้าสู่ระบบได้</p>
 
     <div class="tabs">
       <button id="tab-register" class="active">ลงทะเบียน</button>
@@ -71,7 +71,6 @@
       </form>
 
       <div id="message" style="margin-top:12px"></div>
-
     </div>
 
     <footer>
@@ -82,122 +81,106 @@
 <script>
 // --- Settings ---
 const ADMIN_API_URL = 'https://script.google.com/macros/s/AKfycbxWet5E4SU32487Ct4GaBF5k2dY7ZJL96wwDRPD-IEnCuCfAl_Wbp6wHGOxSvk3JWXilw/exec';
-const REDIRECT_URL = 'https://docs.google.com/spreadsheets/u/1/d/e/2PACX-1vRKy8QJiooOdDlbq9qHbWDm8WBd3pOG_H0H5aJ_-bIgQxM1MwxL6gptDCUNYdxOGzl7hVqXIa-Vk4q/pubhtml';
+const REDIRECT_URL = 'https://docs.google.com/spreadsheets/u/1/d/e/2PACX-1vRKy8QJiooOdDlbq9qHbWDm8WBd3pOG_HH0H5aJ_-bIgQxM1MwxL6gptDCUNYdxOGzl7hVqXIa-Vk4q/pubhtml';
 const STORAGE_KEY = 'my_app_users_v2';
 
 let ADMIN_IDS = [];
 
-// โหลดรายชื่อแอดมินจาก Google Sheet
-async function loadAdminList() {
-  try {
-    const res = await fetch(ADMIN_API_URL);
+// โหลดรายชื่อแอดมินล่าสุดจาก Google Sheet
+async function loadAdminList(){
+  try{
+    const res = await fetch(ADMIN_API_URL + '?_t=' + Date.now());
     const data = await res.json();
     ADMIN_IDS = Array.isArray(data) ? data.map(String) : [];
-    console.log('Admin list loaded:', ADMIN_IDS);
-  } catch (err) {
-    console.error('โหลดรายชื่อแอดมินไม่สำเร็จ:', err);
+    console.log('🔁 อัปเดตรายชื่อแอดมิน:', ADMIN_IDS);
+  }catch(err){
+    console.error('❌ โหลดรายชื่อแอดมินไม่สำเร็จ:', err);
   }
 }
 
 // --- Helpers ---
-function showMessage(text, type='error'){
-  const el = document.getElementById('message');
-  el.innerHTML = `<div class='msg ${type==='ok'?'ok':'error'}'>${text}</div>`;
+function showMessage(text,type='error'){
+  const el=document.getElementById('message');
+  el.innerHTML=`<div class='msg ${type==='ok'?'ok':'error'}'>${text}</div>`;
 }
-
-function clearMessage(){ document.getElementById('message').innerHTML = '' }
+function clearMessage(){document.getElementById('message').innerHTML='';}
 
 async function sha256Base64(str){
-  const enc = new TextEncoder();
-  const data = enc.encode(str);
-  const hash = await crypto.subtle.digest('SHA-256', data);
-  const bytes = new Uint8Array(hash);
-  let binary = '';
-  for (let i=0;i<bytes.byteLength;i++) binary += String.fromCharCode(bytes[i]);
+  const enc=new TextEncoder();
+  const data=enc.encode(str);
+  const hash=await crypto.subtle.digest('SHA-256',data);
+  const bytes=new Uint8Array(hash);
+  let binary='';
+  for(let i=0;i<bytes.byteLength;i++) binary+=String.fromCharCode(bytes[i]);
   return btoa(binary);
 }
 
 function loadUsers(){
-  try{
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  }catch(e){ return [] }
+  try{const raw=localStorage.getItem(STORAGE_KEY);return raw?JSON.parse(raw):{};}catch(e){return{};}
 }
-function saveUsers(users){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(users));
-}
+function saveUsers(users){localStorage.setItem(STORAGE_KEY,JSON.stringify(users));}
 
 // --- UI Tabs ---
-document.getElementById('tab-register').addEventListener('click', ()=>{
-  document.getElementById('form-register').style.display = '';
-  document.getElementById('form-login').style.display = 'none';
+document.getElementById('tab-register').addEventListener('click',()=>{
+  document.getElementById('form-register').style.display='';
+  document.getElementById('form-login').style.display='none';
   document.getElementById('tab-register').classList.add('active');
   document.getElementById('tab-login').classList.remove('active');
   clearMessage();
 });
-document.getElementById('tab-login').addEventListener('click', ()=>{
-  document.getElementById('form-register').style.display = 'none';
-  document.getElementById('form-login').style.display = '';
+document.getElementById('tab-login').addEventListener('click',()=>{
+  document.getElementById('form-register').style.display='none';
+  document.getElementById('form-login').style.display='';
   document.getElementById('tab-register').classList.remove('active');
   document.getElementById('tab-login').classList.add('active');
   clearMessage();
 });
 
 // --- Register ---
-document.getElementById('form-register').addEventListener('submit', async (e)=>{
+document.getElementById('form-register').addEventListener('submit',async (e)=>{
   e.preventDefault();
   clearMessage();
-  const sid = document.getElementById('reg-student').value.trim();
-  const pass = document.getElementById('reg-pass').value;
-  if(!sid || !pass){ showMessage('กรุณากรอกรหัสนักศึกษาและรหัสผ่าน'); return }
-  const users = loadUsers();
-  if(users.find(u=>u.studentId === sid)){
-    showMessage('รหัสนักศึกษานี้ลงทะเบียนไปแล้ว หากลืมรหัสผ่าน ให้ลบข้อมูลใน localStorage หรือลงทะเบียนด้วยรหัสอื่น');
-    return;
+  const sid=document.getElementById('reg-student').value.trim();
+  const pass=document.getElementById('reg-pass').value;
+  if(!sid || !pass){showMessage('กรุณากรอกข้อมูลให้ครบ');return;}
+
+  await loadAdminList(); // โหลดรายชื่อล่าสุดก่อนเช็ก
+
+  const users=loadUsers();
+  if(users[sid]){
+    showMessage('รหัสนักศึกษานี้ลงทะเบียนไปแล้ว');return;
   }
-  const hashed = await sha256Base64(sid + '|' + pass);
-  const isAdmin = ADMIN_IDS.includes(sid);
-  users.push({studentId: sid, passHash: hashed, isAdmin: !!isAdmin, createdAt: new Date().toISOString()});
+  const hashed=await sha256Base64(sid+'|'+pass);
+  const isAdmin=ADMIN_IDS.includes(sid);
+  users[sid]={passHash:hashed,isAdmin,isAdmin,createdAt:new Date().toISOString()};
   saveUsers(users);
-  showMessage(`ลงทะเบียนสำเร็จ${isAdmin? ' (ตั้งเป็นแอดมิน)':''}`, 'ok');
-  setTimeout(()=>{ document.getElementById('tab-login').click(); }, 900);
+  showMessage(`ลงทะเบียนสำเร็จ${isAdmin?' (แอดมิน)':''}`,'ok');
+  setTimeout(()=>{document.getElementById('tab-login').click();},900);
 });
 
 // --- Login ---
-document.getElementById('form-login').addEventListener('submit', async (e)=>{
+document.getElementById('form-login').addEventListener('submit',async (e)=>{
   e.preventDefault();
   clearMessage();
-  const sid = document.getElementById('log-student').value.trim();
-  const pass = document.getElementById('log-pass').value;
-  if(!sid || !pass){ showMessage('กรุณากรอกข้อมูลให้ครบ'); return }
-  const users = loadUsers();
-  const user = users.find(u=>u.studentId === sid);
-  if(!user){ showMessage('ไม่พบบัญชีผู้ใช้ กรุณาลงทะเบียนก่อน'); return }
-  const hashed = await sha256Base64(sid + '|' + pass);
-  if(hashed !== user.passHash){ showMessage('รหัสผ่านไม่ถูกต้อง'); return }
-  if(!user.isAdmin){ showMessage('บัญชีนี้ไม่ได้รับสิทธิ์แอดมิน'); return }
-  showMessage('เข้าสู่ระบบสำเร็จ กำลังพาไปยังเอกสาร...', 'ok');
-  sessionStorage.setItem('loggedUser', JSON.stringify({studentId: user.studentId, loggedAt:new Date().toISOString()}));
-  setTimeout(()=>{ window.location.href = REDIRECT_URL; }, 800);
+  const sid=document.getElementById('log-student').value.trim();
+  const pass=document.getElementById('log-pass').value;
+  if(!sid || !pass){showMessage('กรุณากรอกข้อมูลให้ครบ');return;}
+
+  await loadAdminList(); // โหลดรายชื่อล่าสุดก่อนเช็ก
+
+  const users=loadUsers();
+  const user=users[sid];
+  if(!user){showMessage('ไม่พบบัญชีผู้ใช้ กรุณาลงทะเบียนก่อน');return;}
+  const hashed=await sha256Base64(sid+'|'+pass);
+  if(hashed!==user.passHash){showMessage('รหัสผ่านไม่ถูกต้อง');return;}
+  if(!ADMIN_IDS.includes(sid)){showMessage('บัญชีนี้ไม่มีสิทธิ์เข้าถึง');return;}
+  showMessage('เข้าสู่ระบบสำเร็จ กำลังไปหน้าแอดมิน...','ok');
+  setTimeout(()=>{window.location.href=REDIRECT_URL;},800);
 });
 
-// Reset buttons
-document.getElementById('reg-reset').addEventListener('click', ()=>{
-  document.getElementById('reg-student').value='';
-  document.getElementById('reg-pass').value='';
-});
-document.getElementById('log-reset').addEventListener('click', ()=>{
-  document.getElementById('log-student').value='';
-  document.getElementById('log-pass').value='';
-});
-
-// เริ่มโหลดรายชื่อแอดมินจากชีต
-loadAdminList();
-
-(function(){
-  const last = loadUsers().slice(-1)[0];
-  if(last) document.getElementById('reg-student').value = last.studentId;
-})();
+// --- Reset Buttons ---
+document.getElementById('reg-reset').addEventListener('click',()=>{document.getElementById('reg-student').value='';document.getElementById('reg-pass').value='';clearMessage();});
+document.getElementById('log-reset').addEventListener('click',()=>{document.getElementById('log-student').value='';document.getElementById('log-pass').value='';clearMessage();});
 </script>
 </body>
 </html>
