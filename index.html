@@ -1,146 +1,57 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="utf-8">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ระบบล็อกอินแอดมิน</title>
 <style>
-body{font-family:Arial,Helvetica,sans-serif;background:#f4f4f8;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;}
-.card{background:#fff;padding:28px;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.08);width:100%;max-width:500px;}
-h1{margin:0 0 12px;font-size:20px}
-.tabs{display:flex;gap:8px;margin-bottom:18px}
-.tabs button{flex:1;padding:10px;border-radius:8px;border:1px solid #ddd;background:#fff;cursor:pointer}
-.tabs button.active{background:#1f6feb;color:#fff;border:none}
-form{display:grid;gap:10px}
-label{font-size:13px;color:#314152}
-input[type=text],input[type=password]{width:100%;padding:10px;border:1px solid #ddd;border-radius:8px}
-.row{display:flex;gap:10px}
-.btn{padding:10px 14px;border-radius:8px;border:none;cursor:pointer}
-.btn.primary{background:#1f6feb;color:#fff}
-.btn.ghost{background:transparent;border:1px solid #ddd}
-.msg{padding:10px;border-radius:8px;font-size:14px}
-.msg.error{background:#fff1f0;color:#b42318;border:1px solid #ffd7d4}
-.msg.ok{background:#f0fff6;color:#066b3d;border:1px solid #bff0d6}
+body {font-family:sans-serif; max-width:400px;margin:30px auto;}
+input, button {display:block;width:100%;margin:10px 0;padding:10px;}
+#status {color:blue;}
 </style>
 </head>
 <body>
-<div class="card">
-<h1>ระบบล็อกอินสำหรับแอดมิน</h1>
-<div class="tabs">
-  <button id="tab-register" class="active">ลงทะเบียน</button>
-  <button id="tab-login">ล็อกอิน</button>
-</div>
-
-<div id="content">
-<!-- Register -->
-<form id="form-register">
-<label>รหัสนักศึกษา</label>
-<input id="reg-student" type="text" placeholder="เช่น 65030138" required>
-<label>รหัสผ่าน</label>
-<input id="reg-pass" type="password" placeholder="ตั้งรหัสผ่าน" required>
-<div class="row">
-<button type="submit" class="btn primary">ลงทะเบียน</button>
-<button type="button" id="reg-reset" class="btn ghost">ล้าง</button>
-</div>
-<p>หมายเหตุ: ผู้ที่รหัสอยู่ในรายชื่อแอดมิน (ชีต2) จะถูกตั้งเป็นแอดมิน</p>
-</form>
-
-<!-- Login -->
-<form id="form-login" style="display:none;">
-<label>รหัสนักศึกษา</label>
-<input id="log-student" type="text" placeholder="รหัสนักศึกษา" required>
-<label>รหัสผ่าน</label>
-<input id="log-pass" type="password" placeholder="รหัสผ่าน" required>
-<div class="row">
-<button type="submit" class="btn primary">เข้าสู่ระบบ</button>
-<button type="button" id="log-reset" class="btn ghost">ล้าง</button>
-</div>
-<p>เมื่อเข้าสู่ระบบสำเร็จ จะเด้งไปหน้า Google Sheets</p>
-</form>
-
-<div id="message" style="margin-top:12px"></div>
-</div>
-</div>
+<h1>ระบบลงทะเบียนแอดมิน</h1>
+<input id="sid" placeholder="รหัสนักศึกษา">
+<input id="pass" type="password" placeholder="รหัสผ่าน">
+<button id="btnRegister">ลงทะเบียน</button>
+<p id="status"></p>
 
 <script>
-// --- Settings ---
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwrSwml6ki8U5iGM7tPwWZbqUznewQCdUITf-CuqMqsaMOHEJsL4_fY7Aa8lknrbzel7g/exec';
-const REDIRECT_URL = 'https://docs.google.com/spreadsheets/u/1/d/e/2PACX-1vRKy8QJiooOdDlbq9qHbWDm8WBd3pOG_HH0H5aJ_-bIgQxM1MwxL6gptDCUNYdxOGzl7hVqXIa-Vk4q/pubhtml';
+const API_URL = 'https://script.google.com/macros/s/AKfycbxzgLc2mWuUAhJq-FKOSwWpoeKr1Cuj7EU1iBBScO7Bc-fg5qQp9QzNpeXFgPHPL1i0Rw/exec';
 
-// --- Helpers ---
-function showMessage(text,type='error'){document.getElementById('message').innerHTML=`<div class='msg ${type==='ok'?'ok':'error'}'>${text}</div>`;}
-function clearMessage(){document.getElementById('message').innerHTML='';}
+// ฟังก์ชันเข้ารหัส SHA-256
 async function sha256Base64(str){
-  const enc=new TextEncoder();
-  const data=enc.encode(str);
-  const hash=await crypto.subtle.digest('SHA-256',data);
-  const bytes=new Uint8Array(hash);
-  let binary='';
-  for(let i=0;i<bytes.byteLength;i++) binary+=String.fromCharCode(bytes[i]);
-  return btoa(binary);
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return btoa(String.fromCharCode(...new Uint8Array(buf)));
 }
 
-// --- Tabs ---
-document.getElementById('tab-register').addEventListener('click',()=>{
-  document.getElementById('form-register').style.display='';
-  document.getElementById('form-login').style.display='none';
-  document.getElementById('tab-register').classList.add('active');
-  document.getElementById('tab-login').classList.remove('active');
-  clearMessage();
-});
-document.getElementById('tab-login').addEventListener('click',()=>{
-  document.getElementById('form-register').style.display='none';
-  document.getElementById('form-login').style.display='';
-  document.getElementById('tab-register').classList.remove('active');
-  document.getElementById('tab-login').classList.add('active');
-  clearMessage();
-});
+document.getElementById('btnRegister').addEventListener('click', async ()=>{
+  const sid = document.getElementById('sid').value.trim();
+  const pass = document.getElementById('pass').value;
+  if(!sid||!pass){document.getElementById('status').innerText='กรอกให้ครบ'; return;}
 
-// --- Register ---
-document.getElementById('form-register').addEventListener('submit',async (e)=>{
-  e.preventDefault(); clearMessage();
-  const sid=document.getElementById('reg-student').value.trim();
-  const pass=document.getElementById('reg-pass').value;
-  if(!sid||!pass){showMessage('กรุณากรอกข้อมูลให้ครบ');return;}
-  const hashed=await sha256Base64(sid+'|'+pass);
+  document.getElementById('status').innerText='กำลังลงทะเบียน...';
 
-  try{
-    const res=await fetch(APPS_SCRIPT_URL,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({sid:sid,passHash:hashed})
-    });
-    const data=await res.json();
-    if(data.success){
-      showMessage(`ลงทะเบียนสำเร็จ${data.isAdmin?' (แอดมิน)':''}`,'ok');
-      setTimeout(()=>{document.getElementById('tab-login').click();},800);
-    } else showMessage(data.message);
-  }catch(err){showMessage('เกิดข้อผิดพลาด: '+err);}
-});
+  const hash = await sha256Base64(sid + '|' + pass);
 
-// --- Reset ---
-document.getElementById('reg-reset').addEventListener('click',()=>{document.getElementById('reg-student').value='';document.getElementById('reg-pass').value='';clearMessage();});
-document.getElementById('log-reset').addEventListener('click',()=>{document.getElementById('log-student').value='';document.getElementById('log-pass').value='';clearMessage();});
-
-// --- Login ---
-document.getElementById('form-login').addEventListener('submit',async (e)=>{
-  e.preventDefault(); clearMessage();
-  const sid=document.getElementById('log-student').value.trim();
-  const pass=document.getElementById('log-pass').value;
-  if(!sid||!pass){showMessage('กรุณากรอกข้อมูลให้ครบ');return;}
-  const hashed=await sha256Base64(sid+'|'+pass);
-
-  try{
-    // เช็กข้อมูลผู้ใช้จาก ชีต3 ผ่าน Web App
-    const res=await fetch(APPS_SCRIPT_URL+'?getUsers=1'); 
-    const usersData=await res.json();
-    const user=usersData[sid];
-    if(!user){showMessage('ไม่พบบัญชี');return;}
-    if(user.passHash!==hashed){showMessage('รหัสผ่านไม่ถูกต้อง');return;}
-    if(!user.isAdmin){showMessage('บัญชีไม่มีสิทธิ์เข้าถึง');return;}
-    showMessage('เข้าสู่ระบบสำเร็จ กำลังไปหน้าแอดมิน...','ok');
-    setTimeout(()=>{window.location.href=REDIRECT_URL;},800);
-  }catch(err){showMessage('เกิดข้อผิดพลาด: '+err);}
+  fetch(API_URL, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({sid, passHash: hash})
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    if(res.success){
+      document.getElementById('status').innerText='ลงทะเบียนสำเร็จ' + (res.isAdmin?' (แอดมิน)':'');
+    } else {
+      document.getElementById('status').innerText=res.message;
+    }
+  })
+  .catch(e=>{
+    document.getElementById('status').innerText='เกิดข้อผิดพลาด';
+    console.error(e);
+  });
 });
 </script>
 </body>
