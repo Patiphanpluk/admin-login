@@ -89,43 +89,40 @@ input[type=text],input[type=password]{width:100%;padding:10px;border:1px solid #
 </div>
 
 <script>
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzxX_j6nt2Sr1ItzO6b1V9Npx69PdWwxkd3OGpQ5OZ1CEnX4GXr29Y9afDPKb2MZdJthg/exec'; // แก้เป็นของคุณ
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbymR5vBJtPhNegp9cmYoHwGM5KZ1IgoVTxIDEIXUijvoevSJVglA8_IzO-WhB58JjEpkg/exec';
 
+// ฟังก์ชันช่วยเหลือ
 function showMessage(text,type='error'){
   document.getElementById('message').innerHTML = `<div class="msg ${type==='ok'?'ok':'error'}">${text}</div>`;
 }
 function clearMessage(){ document.getElementById('message').innerHTML=''; }
 function setLoading(btn,state=true){
-  if(state){btn.classList.add('loading');btn.disabled=true;}
-  else{btn.classList.remove('loading');btn.disabled=false;}
+  btn.classList.toggle('loading', state);
+  btn.disabled = state;
 }
 
-// ตรวจสอบสิทธิ์เริ่มต้น
-document.getElementById('form-check').addEventListener('submit',async e=>{
+// ตรวจสอบสิทธิ์
+document.getElementById('form-check').addEventListener('submit', async e=>{
   e.preventDefault();
-  const sid=document.getElementById('check-student').value.trim();
-  const btn=document.getElementById('btn-check');
-  if(!sid){alert('กรุณากรอกรหัสนักศึกษา');return;}
+  const sid = document.getElementById('check-student').value.trim();
+  const btn = document.getElementById('btn-check');
+  if(!sid){alert('กรุณากรอกรหัสนักศึกษา'); return;}
   setLoading(btn,true);
   try{
-    const res=await fetch(WEB_APP_URL,{
+    const res = await fetch(WEB_APP_URL, {
       method:'POST',
-      body:JSON.stringify({action:'checkRegister',studentId:sid})
+      body: JSON.stringify({action:'checkRegister', studentId: sid}),
+      headers: {'Content-Type':'application/json'}
     });
-    const data=await res.json();
+    const data = await res.json();
     document.getElementById('form-check').style.display='none';
     document.getElementById('content').style.display='';
-    document.getElementById('reg-student').value=sid;
-    document.getElementById('log-student').value=sid;
-    if(data.registered){
-      // เคยลงทะเบียนแล้ว แสดงเฉพาะหน้าเข้าสู่ระบบ
-      document.getElementById('tab-login').click();
-    } else {
-      // ยังไม่เคยลงทะเบียน
-      document.getElementById('tab-register').click();
-    }
-  }catch(err){alert('เกิดข้อผิดพลาด: '+err);}
-  finally{setLoading(btn,false);}
+    document.getElementById('reg-student').value = sid;
+    document.getElementById('log-student').value = sid;
+    if(data.registered){ document.getElementById('tab-login').click(); }
+    else { document.getElementById('tab-register').click(); }
+  }catch(err){ alert('เกิดข้อผิดพลาด: '+err); }
+  finally{ setLoading(btn,false); }
 });
 
 // Tabs
@@ -147,43 +144,43 @@ document.getElementById('tab-login').addEventListener('click',()=>{
 // ลงทะเบียน
 document.getElementById('form-register').addEventListener('submit',async e=>{
   e.preventDefault(); clearMessage();
-  const sid=document.getElementById('reg-student').value;
-  const pass=document.getElementById('reg-pass').value;
-  const btn=document.getElementById('btn-register');
+  const sid = document.getElementById('reg-student').value;
+  const pass = document.getElementById('reg-pass').value;
+  const btn = document.getElementById('btn-register');
   setLoading(btn,true);
   try{
-    const res=await fetch(WEB_APP_URL,{
+    const res = await fetch(WEB_APP_URL, {
       method:'POST',
-      body:JSON.stringify({action:'register',studentId:sid,pass:pass})
+      body: JSON.stringify({action:'register', studentId:sid, pass:pass}),
+      headers: {'Content-Type':'application/json'}
     });
-    const data=await res.json();
-    showMessage(data.message,data.success?'ok':'error');
+    const data = await res.json();
+    showMessage(data.message, data.success?'ok':'error');
     if(data.success) setTimeout(()=>document.getElementById('tab-login').click(),1000);
-  }catch(err){showMessage('เกิดข้อผิดพลาด: '+err);}
-  finally{setLoading(btn,false);}
+  }catch(err){ showMessage('เกิดข้อผิดพลาด: '+err); }
+  finally{ setLoading(btn,false); }
 });
 
 // ล็อกอิน
 document.getElementById('form-login').addEventListener('submit',async e=>{
   e.preventDefault(); clearMessage();
-  const sid=document.getElementById('log-student').value;
-  const pass=document.getElementById('log-pass').value;
-  const btn=document.getElementById('btn-login');
+  const sid = document.getElementById('log-student').value;
+  const pass = document.getElementById('log-pass').value;
+  const btn = document.getElementById('btn-login');
   setLoading(btn,true);
   try{
-    const res=await fetch(WEB_APP_URL,{
+    const res = await fetch(WEB_APP_URL, {
       method:'POST',
-      body:JSON.stringify({action:'login',studentId:sid,pass:pass})
+      body: JSON.stringify({action:'login', studentId:sid, pass:pass}),
+      headers: {'Content-Type':'application/json'}
     });
-    const data=await res.json();
+    const data = await res.json();
     if(data.success && data.isAdmin){
       showMessage('เข้าสู่ระบบสำเร็จ กำลังพาไปยังลิงก์...','ok');
-      setTimeout(()=>window.location.href=data.link,800);
-    }else{
-      showMessage(data.message);
-    }
-  }catch(err){showMessage('เกิดข้อผิดพลาด: '+err);}
-  finally{setLoading(btn,false);}
+      setTimeout(()=>window.location.href = data.link, 800);
+    }else{ showMessage(data.message); }
+  }catch(err){ showMessage('เกิดข้อผิดพลาด: '+err); }
+  finally{ setLoading(btn,false); }
 });
 </script>
 </body>
