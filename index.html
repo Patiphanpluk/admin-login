@@ -18,9 +18,24 @@ form{display:grid;gap:10px}
 label{font-size:13px;color:#314152}
 input[type=text],input[type=password]{width:100%;padding:10px;border:1px solid #dbe4f5;border-radius:8px}
 .row{display:flex;gap:10px}
-.btn{padding:10px 14px;border-radius:8px;border:none;cursor:pointer}
-.btn.primary{background:var(--accent);color:#fff}
+.btn{padding:10px 14px;border-radius:8px;border:none;cursor:pointer;position:relative;overflow:hidden}
+.btn.primary{background:var(--accent);color:#fff;transition:background 0.3s}
 .btn.ghost{background:transparent;border:1px solid #dbe4f5}
+.btn.loading{background:#4da3ff;pointer-events:none;opacity:0.8}
+.btn.loading::after{
+  content:"";
+  position:absolute;
+  right:12px;
+  top:50%;
+  width:16px;
+  height:16px;
+  border:2px solid #fff;
+  border-top-color:transparent;
+  border-radius:50%;
+  transform:translateY(-50%);
+  animation:spin 0.8s linear infinite;
+}
+@keyframes spin{to{transform:translateY(-50%) rotate(360deg)}}
 .note{font-size:13px;color:#6b7280}
 .msg{padding:10px;border-radius:8px;font-size:14px}
 .msg.error{background:#fff1f0;color:#b42318;border:1px solid #ffd7d4}
@@ -49,7 +64,7 @@ footer{margin-top:14px;font-size:13px;color:#7b8394}
     <input id="reg-pass" type="password" placeholder="ตั้งรหัสผ่าน" required>
 
     <div class="row">
-      <button type="submit" class="btn primary">ลงทะเบียน</button>
+      <button type="submit" class="btn primary" id="btn-register">ลงทะเบียน</button>
       <button type="button" id="reg-reset" class="btn ghost">ล้าง</button>
     </div>
     <p class="note">หมายเหตุ: หากรหัสนักศึกษามีสิทธิ์แอดมิน จะถูกตั้งค่าเป็นแอดมินโดยอัตโนมัติ</p>
@@ -64,7 +79,7 @@ footer{margin-top:14px;font-size:13px;color:#7b8394}
     <input id="log-pass" type="password" placeholder="รหัสผ่าน" required>
 
     <div class="row">
-      <button type="submit" class="btn primary">เข้าสู่ระบบ</button>
+      <button type="submit" class="btn primary" id="btn-login">เข้าสู่ระบบ</button>
       <button type="button" id="log-reset" class="btn ghost">ล้าง</button>
     </div>
     <p class="small">เมื่อเข้าสู่ระบบสำเร็จ (และเป็นแอดมิน) จะเด้งไปยังลิงก์ที่กำหนดในชีต2</p>
@@ -84,6 +99,12 @@ function showMessage(text,type='error'){
   document.getElementById('message').innerHTML = `<div class='msg ${type==='ok'?'ok':'error'}'>${text}</div>`;
 }
 function clearMessage(){ document.getElementById('message').innerHTML=''; }
+
+// ฟังก์ชันเปลี่ยนปุ่มเป็นสถานะโหลด
+function setLoading(btn, state=true){
+  if(state){ btn.classList.add('loading'); btn.disabled = true; }
+  else{ btn.classList.remove('loading'); btn.disabled = false; }
+}
 
 // Tabs
 document.getElementById('tab-register').addEventListener('click',()=>{
@@ -106,7 +127,9 @@ document.getElementById('form-register').addEventListener('submit',async e=>{
   e.preventDefault(); clearMessage();
   const sid=document.getElementById('reg-student').value.trim();
   const pass=document.getElementById('reg-pass').value;
+  const btn=document.getElementById('btn-register');
   if(!sid||!pass){ showMessage('กรุณากรอกข้อมูลให้ครบ'); return; }
+  setLoading(btn,true);
   try{
     const res=await fetch(WEB_APP_URL,{
       method:'POST',
@@ -120,15 +143,21 @@ document.getElementById('form-register').addEventListener('submit',async e=>{
       showMessage(data.message);
     }
   } catch(err){ showMessage('เกิดข้อผิดพลาด: '+err); }
+  finally{ setLoading(btn,false); }
 });
-document.getElementById('reg-reset').addEventListener('click',()=>{ document.getElementById('reg-student').value=''; document.getElementById('reg-pass').value=''; });
+document.getElementById('reg-reset').addEventListener('click',()=>{ 
+  document.getElementById('reg-student').value=''; 
+  document.getElementById('reg-pass').value=''; 
+});
 
 // Login
 document.getElementById('form-login').addEventListener('submit',async e=>{
   e.preventDefault(); clearMessage();
   const sid=document.getElementById('log-student').value.trim();
   const pass=document.getElementById('log-pass').value;
+  const btn=document.getElementById('btn-login');
   if(!sid||!pass){ showMessage('กรุณากรอกข้อมูลให้ครบ'); return; }
+  setLoading(btn,true);
   try{
     const res=await fetch(WEB_APP_URL,{
       method:'POST',
@@ -142,8 +171,21 @@ document.getElementById('form-login').addEventListener('submit',async e=>{
       showMessage(data.message);
     }
   } catch(err){ showMessage('เกิดข้อผิดพลาด: '+err); }
+  finally{ setLoading(btn,false); }
 });
-document.getElementById('log-reset').addEventListener('click',()=>{ document.getElementById('log-student').value=''; document.getElementById('log-pass').value=''; });
+document.getElementById('log-reset').addEventListener('click',()=>{ 
+  document.getElementById('log-student').value=''; 
+  document.getElementById('log-pass').value=''; 
+});
+
+// ✅ รองรับการกด Enter เพื่อ Submit
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){
+    const regVisible = document.getElementById('form-register').style.display !== 'none';
+    if(regVisible) document.getElementById('form-register').requestSubmit();
+    else document.getElementById('form-login').requestSubmit();
+  }
+});
 </script>
 </body>
 </html>
